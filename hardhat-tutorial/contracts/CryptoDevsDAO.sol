@@ -46,6 +46,7 @@ struct Proposal {
     uint256 public numProposals;
 
     IFakeNFTMarketplace nftMarketplace;
+    ICryptoDevsnf cryptoDevsNFT;
 
 
 }
