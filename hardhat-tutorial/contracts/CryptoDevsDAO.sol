@@ -49,5 +49,9 @@ struct Proposal {
     ICryptoDevsnf cryptoDevsNFT;
 
 
+    constructor(address _nftMarketplace, address _cryptoDevsNFT) payable
+        nftMarketplace = IFakeNFTMarketplace(_nftMarketplace);
+        cryptoDevsNFT = ICryptoDevsNFT(_cryptoDevsNFT);
+
 }
 }
