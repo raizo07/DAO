@@ -53,5 +53,27 @@ struct Proposal {
         nftMarketplace = IFakeNFTMarketplace(_nftMarketplace);
         cryptoDevsNFT = ICryptoDevsNFT(_cryptoDevsNFT);
 
+        modifier nftHolderOnly() {
+            require(cryptodevsNFT.balanceOf(msg.sender) > 0, "NOT-A-DAO-MEMBER");
+            _;
+        }
+
+        function createproposal(uint256 _nftTokenId) 
+            external
+            nftHolderOnly
+            returns (uint256)
+        {
+            require(nftMarketplace.available(_nftTokenId), "NFT-NOT-FOR-SALE");
+            Proposal storage proposal = proposals[numproposals];
+            proposal.nftTokenId =_nftTokenId;
+            // Set the proposal's voting deadline to be (current time + 5 minutes)
+            proposal.deadline = block.timestamp + 5 minutes;
+
+            numProposals++;
+
+            return numproposals - 1;
+
+        }
+
 }
 }
