@@ -75,5 +75,13 @@ struct Proposal {
 
         }
 
+modifier activeProposalOnly(uint256 proposalindex) {
+    require(
+        proposals[proposalIndex].deadline > block.timestamp,
+        "DEADLINE_EXCEEDED"
+    );
+    _;
+}
+
 }
 }
