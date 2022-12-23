@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface IFakeNFTMarketplace {
 
-    function getprice() external view returns (uint256);
+    function getPrice() external view returns (uint256);
 
     function available(uint256 _tokenId) external view returns (bool);
 
@@ -40,21 +40,22 @@ struct Proposal {
     bool executed;
 
     mapping(uint256 => bool) voters;
+}
 
     mapping(uint256 => Proposal) public proposals;
 
     uint256 public numProposals;
 
     IFakeNFTMarketplace nftMarketplace;
-    ICryptoDevsnf cryptoDevsNFT;
+    ICryptoDevsNFT cryptoDevsNFT;
 
 
-    constructor(address _nftMarketplace, address _cryptoDevsNFT) payable
+    constructor(address _nftMarketplace, address _cryptoDevsNFT) payable {
         nftMarketplace = IFakeNFTMarketplace(_nftMarketplace);
         cryptoDevsNFT = ICryptoDevsNFT(_cryptoDevsNFT);
-
+}
         modifier nftHolderOnly() {
-            require(cryptodevsNFT.balanceOf(msg.sender) > 0, "NOT-A-DAO-MEMBER");
+            require(cryptoDevsNFT.balanceOf(msg.sender) > 0, "NOT-A-DAO-MEMBER");
             _;
         }
 
@@ -64,18 +65,18 @@ struct Proposal {
             returns (uint256)
         {
             require(nftMarketplace.available(_nftTokenId), "NFT-NOT-FOR-SALE");
-            Proposal storage proposal = proposals[numproposals];
+            Proposal storage proposal = proposals[numProposals];
             proposal.nftTokenId =_nftTokenId;
             // Set the proposal's voting deadline to be (current time + 5 minutes)
             proposal.deadline = block.timestamp + 5 minutes;
 
             numProposals++;
 
-            return numproposals - 1;
+            return numProposals - 1;
 
         }
 
-modifier activeProposalOnly(uint256 proposalindex) {
+modifier activeProposalOnly(uint256 proposalIndex) {
     require(
         proposals[proposalIndex].deadline > block.timestamp,
         "DEADLINE_EXCEEDED"
@@ -89,7 +90,7 @@ enum Vote {
 }
 
 function voteOnProposal(uint256 proposalIndex, Vote vote) 
-    External
+    external
     nftHolderOnly
     activeProposalOnly(proposalIndex)
 {
@@ -116,6 +117,63 @@ function voteOnProposal(uint256 proposalIndex, Vote vote)
     }
 
 }
+
+
+modifier inactiveProposalOnly(uint256 proposalIndex) {
+    require(
+        proposals[proposalIndex].deadline <= block.timestamp,
+        "DEADLINE-NOT-EXCEEDED"
+    );
+    require(
+        proposals[proposalIndex].executed == false,
+        "PROPOSAL-ALREADY-EXECUTED"
+    );
+    _;
+}
+
+function executeProposal(uint256 proposalIndex) 
+    external
+    nftHolderOnly
+    inactiveProposalOnly(proposalIndex)
+{
+    Proposal storage proposal = proposals[proposalIndex];
+
+    if (proposal.yayVotes > proposal.nayVotes) {
+        uint256 nftPrice = nftMarketplace.getPrice();
+        require(address(this).balance >= nftPrice, "NOT-ENOUGH-FUNDS");
+        nftMarketplace.purchase{value: nftPrice}(proposal.nftTokenId);
+     }
+     proposal.executed = true;
+}
+
+/// @dev withdrawEther allows the contract owner (deployer) to withdraw the ETH from the contract
+function withdrawEther() external onlyOwner {
+    uint256 amount = address(this).balance;
+    require(amount > 0, "Nothing to withdraw, contract balance is empty");
+    payable(owner()).transfer(amount);
+}
+
+receive() external payable {}
+
+fallback() external payable {}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 
@@ -125,4 +183,3 @@ function voteOnProposal(uint256 proposalIndex, Vote vote)
 
 
 
-}
