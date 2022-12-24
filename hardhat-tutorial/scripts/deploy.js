@@ -12,5 +12,22 @@ async function main() {
     console.log("FakeNFTMarketplace deployed to: ", fakeNftMarketplace.address);
 
     // deploy the CryptoDevsDAO contract
-    const CryptoDevsDAO = await ethers.getContractFactory("CryptoDevsDAO")
+    const CryptoDevsDAO = await ethers.getContractFactory("CryptoDevsDAO");
+    CryptoDevsDAO = await CryptoDevsDAO.deploy(
+        fakeNftMarketplace.address,
+        CRYPTODEVS_NFT_CONTRACT_ADDRESS
+        {
+            value: ethers.utils.parseEther("1"),
+        }
+    );
+    await CryptoDevsDAO.deployed();
+
+    console.log("CryptoDevsDAO deployed to: ", CryptoDevsDAO.address);
 }
+
+main() 
+    .then(() => PromiseRejectionEvent.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
