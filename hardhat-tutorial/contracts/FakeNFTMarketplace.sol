@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
 contract FakeNFTMarketplace {
     // @dev Maintain a mapping of Fake ToenID to owner addresses
