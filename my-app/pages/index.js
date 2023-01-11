@@ -23,6 +23,7 @@ export default function Home() {
     const [isOwner, setIsOwner] = useState(false);
     const web3Modal = useRef();
 
+    // Helper funmction to connect wallet
     const connectWallet = async () => {
         try {
             await getProviderOrSigner();
@@ -31,5 +32,81 @@ export default function Home() {
             console.error(error);
         }
     };
+
+    /**
+     * getOwner: gets the contract owner by connected address
+     */
+
+    const getDAOOwner = async () => {
+        try {
+            const signer = await getProviderOrSigner(true);
+            const contract = getDaoContractInstance(signer);
+
+            //Call the owner function from the contract
+            const _owner = await contract.owner();
+            // Get the address that is associated to signer which is connected to Metamask
+             const address = await signer.getAddress();
+             if (address.toLowerCase() === _owner.toLowerCase()) {
+                setIsOwner(true);
+             } 
+        } catch (err) {
+            console.error(err.message);
+        }
+    };
+
+
+    /**
+     * withdrawCoins: withdraw ether by calling
+     * the withdraw function
+     */
+
+    const withdrawDAOEther = async () => {
+        try {
+            const signer = await getProviderOrSigner(true);
+            const contract = await getDaoContractInstance(signer);
+
+            const tx = await contract.withdrawEther();
+            setLoading(true);
+            await tx.wait();
+            setLoading(false);
+            getDAOTreausryBalance();
+        } catch (err) {
+            console.error(err);
+            window.alert(err.reason);
+        }
+    };
+
+    // Read the ETH balance of the DAO contract and sets the `treasuryBalance` state variable
+    const getDAOTreausryBalance = async () => {
+        try {
+            const provider = await getProviderOrSigner();
+            const balance = await provider.getBalance(
+                CRYPTODEVS_DAO_CONTRACT_ADDRESS
+            );
+            setTreasurybalance(balance.toString());
+        } catch (error) {
+            console.error(error)
+        }
+    };
+
+    //Read the number of proposals in the DAO contract and sets the `numProposals` state variable
+    const getNumProposalsInDAO = async () => {
+        try {
+            const provider = await getProviderOrSigner();
+            const contract = getDaoContractInstance(provider);
+            const daoNumProposals = await contract.numProposals();
+            setNumberOfproposals(daoNumProposals.toString());
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+
+
+
+
+
+
+
 
 }
